@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "glob": "^8.0.3",
+    "moment": "^2.29.4",
+    "npm": "^9.1.2"
+  },
+  "name": "sorting",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "description": ""
+}
