@@ -2,11 +2,12 @@ const fs = require("fs");
 const path = require("path");
 const moment = require("moment");
 
-const the_path = "/Users/ban96/OneDrive/Desktop/הלבנות";
-const new_path = "./";
+const the_path = "/home/noga/Desktop/test";
+const new_path = "/home/noga/Desktop";
 let targetPath = "";
 
 const fsp = fs.promises;
+
 
 async function createTargetFolder(target) {
   targetPath = path.resolve(target, "קבצים ממויינים");
@@ -22,18 +23,18 @@ async function isFolderRecurse(dir) {
 
     const stats = await fsp.stat(filepath);
     const isFile = stats.isFile();
-    isFile ? handleFile(filepath) : isFolderRecurse(filepath);
+    isFile ? handleFile(filepath, fileName) : isFolderRecurse(filepath);
   });
 }
 
-async function handleFile(filePath) {
+async function handleFile(filePath, fileName) {
   const stats = await fsp.stat(filePath);
   const fileDateCreated = moment(stats.birthtime).format("DD.MM.YY");
 
-  await insertFileToFolder(filePath, fileDateCreated);
+  await insertFileToFolder(filePath, fileDateCreated, fileName);
 }
 
-async function insertFileToFolder(oldPath, folderName) {
+async function insertFileToFolder(oldPath, folderName, fileName) {
   const newFolderPath = path.resolve(targetPath, folderName);
   if (!fs.existsSync(newFolderPath)) {
     await fsp.mkdir(newFolderPath, { recursive: true });
@@ -42,20 +43,26 @@ async function insertFileToFolder(oldPath, folderName) {
   try {
     await fsp.access(oldPath, fs.constants.R_OK);
     await fsp.access(newFolderPath, fs.constants.W_OK);
-    await fsp.copyFile(oldPath, newFolderPath);
+    await fsp.cp(oldPath, path.resolve(newFolderPath, fileName), {
+      preserveTimestamps: true,
+    });
 
     console.log("File copied successfully.");
   } catch (ex) {
-    if (ex.errno === -2)
-      console.error(`File "${oldPath}" doesn't exist.`);
+    if (ex.errno === -2) console.error(`File "${oldPath}" doesn't exist.`);
     else if (ex.errno === -13)
       console.error(`Could not access "${path.resolve(newFolderPath)}"`);
-    else
-      console.error(ex);
+    else console.error(ex);
   }
 }
 
-(() => {
-  createTargetFolder(new_path);
-  isFolderRecurse(the_path);
+
+async function sort(oldPath, newPath) {
+  await createTargetFolder(newPath);
+  await isFolderRecurse(oldPath);
+  // fs.opendir(newPath);
+}
+
+(async () => {
+  await sort(the_path, new_path);
 })();
